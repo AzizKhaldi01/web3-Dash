@@ -72,18 +72,18 @@ export default function PortfolioPage() {
               {[1, 2, 3, 4].map(i => (
                 <div key={i} className="card" style={{ height: 120 }}>
                   <Skeleton width="60%" height={16} />
-                  <Skeleton width="40%" height={24} style={{ marginTop: 12 }} />
-                  <Skeleton width="30%" height={12} style={{ marginTop: 8 }} />
+                  <Skeleton width="40%" height={24} />
+                  <Skeleton width="30%" height={12} />
                 </div>
               ))}
             </div>
             <div className={styles.mainContent}>
               <div className={`card ${styles.assetsCard}`}>
-                <Skeleton width="150px" height={24} style={{ marginBottom: 20 }} />
+                <Skeleton width="150px" height={24} />
                 {[1, 2, 3, 4, 5].map(i => <TableRowSkeleton key={i} />)}
               </div>
               <div className={`card ${styles.allocationCard}`}>
-                <Skeleton width="150px" height={24} style={{ marginBottom: 20 }} />
+                <Skeleton width="150px" height={24} />
                 <Skeleton width="100%" height={250} borderRadius="50%" />
                 <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {[1, 2, 3].map(i => <Skeleton key={i} width="100%" height={20} />)}

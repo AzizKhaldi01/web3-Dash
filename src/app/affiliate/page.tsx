@@ -27,9 +27,9 @@ export default function AffiliatePage() {
       }}>
         {isLoading ? (
           <>
-            <Skeleton width={80} height={80} borderRadius={24} style={{ marginBottom: 24 }} />
-            <Skeleton width={300} height={40} style={{ marginBottom: 12 }} />
-            <Skeleton width={400} height={60} style={{ marginBottom: 32 }} />
+            <Skeleton width={80} height={80} borderRadius={24} />
+            <Skeleton width={300} height={40} />
+            <Skeleton width={400} height={60} />
             <Skeleton width={200} height={44} borderRadius={12} />
           </>
         ) : (
