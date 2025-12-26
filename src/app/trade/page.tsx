@@ -5,6 +5,7 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import styles from '@/styles/Trade.module.css';
 import dynamic from 'next/dynamic';
 import { Chat } from '@/components/trade/Chat';
+import { Skeleton, CardSkeleton, ChartSkeleton } from '@/components/ui/Skeleton';
 import {
   Table,
   TableBody,
@@ -13,27 +14,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { 
-  ChevronDown, 
-  Settings, 
-  Info, 
+import {
+  ChevronDown,
+  Settings,
+  Info,
   Maximize2,
-  ExternalLink,
   TrendingUp,
-  TrendingDown,
-  Clock,
-  Zap,
-  Shield,
   Activity
 } from 'lucide-react';
 
 // Dynamically import the custom TradeChart component to avoid SSR issues
-const TradeChart = dynamic(() => import('@/components/trade/TradeChart'), { 
+const TradeChart = dynamic(() => import('@/components/trade/TradeChart'), {
   ssr: false,
   loading: () => <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>Loading Chart...</div>
 });
-
-
 
 // Memoized data generation to prevent lagging
 const generateCandleData = () => {
@@ -51,8 +45,8 @@ const generateCandleData = () => {
     const close = open + (Math.random() - 0.5) * 40;
     const high = Math.max(open, close) + Math.random() * 10;
     const low = Math.min(open, close) - Math.random() * 10;
-    
-    data.x.push(`2023-12-26 ${Math.floor(i/4)}:${(i%4)*15}:00`);
+
+    data.x.push(`2023-12-26 ${Math.floor(i / 4)}:${(i % 4) * 15}:00`);
     data.open.push(open);
     data.high.push(high);
     data.low.push(low);
@@ -95,6 +89,7 @@ const MARKET_TRADES = [
 ];
 
 export default function TradePage() {
+  const [isLoading, setIsLoading] = useState(true);
   const [activeChartTab, setActiveChartTab] = useState('Chart');
   const [activeBottomTab, setActiveBottomTab] = useState('Positions');
   const [activeBookTab, setActiveBookTab] = useState('Order Book');
@@ -105,8 +100,11 @@ export default function TradePage() {
   const [price, setPrice] = useState('1648.35');
   const [amount, setAmount] = useState('100.00');
   const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
     setMounted(true);
+    const timer = setTimeout(() => setIsLoading(false), 1500);
+    return () => clearTimeout(timer);
   }, []);
 
   const [candleData, setCandleData] = useState(() => generateCandleData());
@@ -114,10 +112,11 @@ export default function TradePage() {
   // Simulate real-time price updates
   const [currentPrice, setCurrentPrice] = useState(1648.35);
   useEffect(() => {
+    if (isLoading) return;
     const interval = setInterval(() => {
       const newPrice = currentPrice + (Math.random() - 0.5) * 2;
       setCurrentPrice(newPrice);
-      
+
       // Update the last candle in the chart
       setCandleData(prev => {
         const newData = { ...prev };
@@ -129,8 +128,34 @@ export default function TradePage() {
       });
     }, 2000);
     return () => clearInterval(interval);
-  }, [currentPrice]);
+  }, [currentPrice, isLoading]);
 
+
+  if (isLoading) {
+    return (
+      <MainLayout>
+        <div className={styles.trade}>
+          <div className={styles.assetHeader} style={{ background: 'var(--card-bg)' }}>
+            <Skeleton width="150px" height={24} />
+            <Skeleton width="100px" height={24} />
+            <Skeleton width="100px" height={24} />
+            <Skeleton width="100px" height={24} />
+            <Skeleton width="100px" height={24} />
+          </div>
+          <div className={styles.chartSection}>
+            <ChartSkeleton />
+            <div className="card" style={{ height: 250 }}><Skeleton width="100%" height="100%" /></div>
+          </div>
+          <div className={styles.orderBook}>
+            <div className="card" style={{ height: '100%' }}><Skeleton width="100%" height="100%" /></div>
+          </div>
+          <div className={styles.tradingPanel}>
+            <div className="card" style={{ height: '100%' }}><Skeleton width="100%" height="100%" /></div>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>
@@ -182,7 +207,7 @@ export default function TradePage() {
             <div className={styles.chartControls}>
               <div className={styles.chartTabs}>
                 {['Chart', 'Depth', 'Funding', 'Details'].map(tab => (
-                  <span 
+                  <span
                     key={tab}
                     className={`${styles.chartTab} ${activeChartTab === tab ? styles.chartTabActive : ''}`}
                     onClick={() => setActiveChartTab(tab)}
@@ -201,22 +226,18 @@ export default function TradePage() {
                 <Maximize2 size={16} color="var(--text-muted)" style={{ cursor: 'pointer' }} />
               </div>
             </div>
-            
+
             <div className={styles.chartWrapper}>
               {mounted && (
                 <TradeChart data={candleData} />
               )}
             </div>
-
-
-
-
           </div>
 
           <div className={`card ${styles.positionsCard}`}>
             <div className={styles.chartTabs} style={{ marginBottom: 16 }}>
               {['Positions', 'Orders', 'History', 'Chat'].map(tab => (
-                <span 
+                <span
                   key={tab}
                   className={`${styles.chartTab} ${activeBottomTab === tab ? styles.chartTabActive : ''}`}
                   onClick={() => setActiveBottomTab(tab)}
@@ -226,7 +247,7 @@ export default function TradePage() {
                 </span>
               ))}
             </div>
-            
+
             <div style={{ flex: 1, overflowY: 'auto' }}>
               {activeBottomTab === 'Chat' ? (
                 <Chat />
@@ -272,7 +293,7 @@ export default function TradePage() {
           <div className={`card`} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div className={styles.chartTabs} style={{ marginBottom: 4 }}>
               {['Order Book', 'Market Trades'].map(tab => (
-                <span 
+                <span
                   key={tab}
                   className={`${styles.chartTab} ${activeBookTab === tab ? styles.chartTabActive : ''}`}
                   onClick={() => setActiveBookTab(tab)}
@@ -308,10 +329,10 @@ export default function TradePage() {
                         <TableCell className="py-1 text-[var(--danger)] text-[11px] z-10">{row.price}</TableCell>
                         <TableCell className="py-1 text-right text-[11px] z-10">{row.size}</TableCell>
                         <TableCell className="py-1 text-right text-[11px] z-10">{row.sum}</TableCell>
-                        <div 
-                          className={styles.depthBar} 
-                          style={{ 
-                            width: `${row.depth}%`, 
+                        <div
+                          className={styles.depthBar}
+                          style={{
+                            width: `${row.depth}%`,
                             background: 'var(--danger)',
                             position: 'absolute',
                             right: 0,
@@ -320,7 +341,7 @@ export default function TradePage() {
                             zIndex: 0,
                             opacity: 0.1,
                             pointerEvents: 'none'
-                          }} 
+                          }}
                         />
                       </TableRow>
                     ))}
@@ -338,10 +359,10 @@ export default function TradePage() {
                         <TableCell className="py-1 text-[var(--success)] text-[11px] z-10">{row.price}</TableCell>
                         <TableCell className="py-1 text-right text-[11px] z-10">{row.size}</TableCell>
                         <TableCell className="py-1 text-right text-[11px] z-10">{row.sum}</TableCell>
-                        <div 
-                          className={styles.depthBar} 
-                          style={{ 
-                            width: `${row.depth}%`, 
+                        <div
+                          className={styles.depthBar}
+                          style={{
+                            width: `${row.depth}%`,
                             background: 'var(--success)',
                             position: 'absolute',
                             right: 0,
@@ -350,7 +371,7 @@ export default function TradePage() {
                             zIndex: 0,
                             opacity: 0.1,
                             pointerEvents: 'none'
-                          }} 
+                          }}
                         />
                       </TableRow>
                     ))}
@@ -386,7 +407,7 @@ export default function TradePage() {
         <div className={styles.tradingPanel}>
           <div className={styles.orderTypeToggle}>
             {['Isolated', 'Cross'].map(t => (
-              <button 
+              <button
                 key={t}
                 className={`${styles.typeBtn} ${marginType === t ? styles.typeBtnActive : ''}`}
                 onClick={() => setMarginType(t)}
@@ -399,13 +420,13 @@ export default function TradePage() {
           </div>
 
           <div className={styles.sideToggle}>
-            <button 
+            <button
               className={`${styles.sideBtn} ${side === 'Long' ? styles.longActive : ''}`}
               onClick={() => setSide('Long')}
             >
               Long
             </button>
-            <button 
+            <button
               className={`${styles.sideBtn} ${side === 'Short' ? styles.shortActive : ''}`}
               onClick={() => setSide('Short')}
             >
@@ -415,7 +436,7 @@ export default function TradePage() {
 
           <div className={styles.orderTypeToggle}>
             {['Market', 'Limit', 'Stop'].map(t => (
-              <button 
+              <button
                 key={t}
                 className={`${styles.typeBtn} ${orderType === t ? styles.typeBtnActive : ''}`}
                 onClick={() => setOrderType(t)}
@@ -472,9 +493,9 @@ export default function TradePage() {
             </div>
           </div>
 
-          <button 
+          <button
             className={styles.placeOrderBtn}
-            style={{ 
+            style={{
               background: side === 'Long' ? 'var(--success)' : 'var(--danger)',
               color: side === 'Long' ? '#000' : '#fff'
             }}
@@ -505,4 +526,3 @@ export default function TradePage() {
     </MainLayout>
   );
 }
-

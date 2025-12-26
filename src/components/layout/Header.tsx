@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Bell, HelpCircle, Globe, ChevronDown, Hexagon, Menu } from 'lucide-react';
+import { Bell, HelpCircle, Globe, ChevronDown, Hexagon } from 'lucide-react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -17,21 +17,12 @@ const navItems = [
 
 import { motion } from 'framer-motion';
 
-export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
+export function Header() {
   const pathname = usePathname();
 
   return (
     <header className={styles.header}>
       <div className={styles.logoSection}>
-        <motion.button 
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          className={styles.menuBtn} 
-          onClick={onMenuClick}
-        >
-          <Menu size={24} />
-        </motion.button>
-
         <Link href="/" className={styles.logo}>
           <Hexagon size={24} fill="var(--primary)" />
           <span className="outfit">Web3 dashboard</span>
@@ -41,9 +32,9 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
           {navItems.map((item) => {
             const isActive = (item.href === '/' && pathname === '/') || (item.href !== '/' && pathname.startsWith(item.href));
             return (
-              <Link 
-                key={item.label} 
-                href={item.href} 
+              <Link
+                key={item.label}
+                href={item.href}
                 className={`${styles.navLink} ${isActive ? styles.navLinkActive : ''}`}
               >
                 {item.label}
@@ -64,8 +55,8 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
         <button className={styles.iconBtn}>
           <Globe size={18} />
         </button>
-        
-        <ConnectButton 
+
+        <ConnectButton
           accountStatus="address"
           showBalance={false}
           chainStatus="icon"

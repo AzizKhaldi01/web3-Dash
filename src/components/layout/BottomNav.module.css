@@ -1,0 +1,78 @@
+.bottomNav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 70px;
+    background: rgba(22, 26, 30, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--glass-border);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    padding-bottom: env(safe-area-inset-bottom);
+    display: none;
+
+    @media (max-width: 768px) {
+        display: inline;
+    }
+}
+
+.container {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0 10px;
+}
+
+.navItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 10px;
+    font-weight: 500;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    flex: 1;
+    padding: 8px 0;
+}
+
+.iconWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.active {
+    color: var(--primary);
+}
+
+.active .iconWrapper {
+    background: var(--primary-glow);
+    color: var(--primary);
+}
+
+.label {
+    letter-spacing: 0.2px;
+}
+
+.indicator {
+    position: absolute;
+    top: -8px;
+    width: 20px;
+    height: 3px;
+    background: var(--primary);
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 0 15px var(--primary-glow);
+}
