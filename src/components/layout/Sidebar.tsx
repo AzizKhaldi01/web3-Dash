@@ -3,12 +3,11 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import {
-  LayoutDashboard,
-  Wallet,
-  LineChart,
-  BarChart3,
-  Settings,
+import { 
+  LayoutDashboard, 
+  Wallet, 
+  LineChart, 
+  Settings, 
   HelpCircle,
   Hexagon,
   X,
@@ -19,11 +18,11 @@ import { motion } from 'framer-motion';
 import styles from './Sidebar.module.css';
 
 const navItems = [
-  { icon: LayoutDashboard, label: 'Dashboard', href: '/' },
-  { icon: BarChart3, label: 'Analytics', href: '/analytics' },
   { icon: LineChart, label: 'Trade', href: '/trade' },
   { icon: Wallet, label: 'Portfolio', href: '/portfolio' },
+  { icon: LayoutDashboard, label: 'Wallet', href: '/dashboard' },
   { icon: Users, label: 'Affiliate', href: '/affiliate' },
+  { icon: MoreHorizontal, label: 'More', href: '/more' },
 ];
 
 
@@ -42,8 +41,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   return (
     <>
-      <div
-        className={`${styles.overlay} ${isOpen ? styles.overlayOpen : ''}`}
+      <div 
+        className={`${styles.overlay} ${isOpen ? styles.overlayOpen : ''}`} 
         onClick={onClose}
       />
       <aside className={`${styles.sidebar} ${isOpen ? styles.sidebarOpen : ''}`}>
@@ -52,9 +51,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             <Hexagon size={28} fill="var(--primary)" />
             <span className="outfit">BlockTrade</span>
           </div>
-          <motion.button
+          <motion.button 
             whileTap={{ scale: 0.9 }}
-            className={styles.closeBtn}
+            className={styles.closeBtn} 
             onClick={onClose}
           >
             <X size={20} />
@@ -66,8 +65,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             const Icon = item.icon;
             const isActive = pathname === item.href;
             return (
-              <Link
-                key={item.href}
+              <Link 
+                key={item.href} 
                 href={item.href}
                 className={`${styles.navItem} ${isActive ? styles.active : ''}`}
                 onClick={onClose}
@@ -83,8 +82,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           {bottomItems.map((item) => {
             const Icon = item.icon;
             return (
-              <Link
-                key={item.href}
+              <Link 
+                key={item.href} 
                 href={item.href}
                 className={styles.navItem}
                 onClick={onClose}

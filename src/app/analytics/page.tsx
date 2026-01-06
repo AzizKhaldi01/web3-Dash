@@ -2,109 +2,107 @@
 
 import React from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
+import styles from '@/styles/Analytics.module.css';
 import dynamic from 'next/dynamic';
-import styles from './Analytics.module.css';
-import { Activity, Globe, Zap, BarChart3, Filter } from 'lucide-react';
-import { Skeleton, CardSkeleton, ChartSkeleton } from '@/components/ui/Skeleton';
 
-const NetworkActivity = dynamic(() => import('@/components/analytics/NetworkActivity'), { ssr: false });
-const MarketPulse = dynamic(() => import('@/components/analytics/MarketPulse'), { ssr: false });
-const HeatmapChart = dynamic(() => import('@/components/analytics/HeatmapChart'), { ssr: false });
-const FlowAnalysis = dynamic(() => import('@/components/analytics/FlowAnalysis'), { ssr: false });
+const VolumeChart = dynamic(() => import('@/components/analytics/VolumeChart'), { 
+  ssr: false,
+  loading: () => <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>Loading...</div>
+});
+
+const GrowthChart = dynamic(() => import('@/components/analytics/GrowthChart'), { 
+  ssr: false,
+  loading: () => <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>Loading...</div>
+});
+
+const volumeData = [
+  { name: 'Mon', volume: 4000, users: 2400 },
+  { name: 'Tue', volume: 3000, users: 1398 },
+  { name: 'Wed', volume: 2000, users: 9800 },
+  { name: 'Thu', volume: 2780, users: 3908 },
+  { name: 'Fri', volume: 1890, users: 4800 },
+  { name: 'Sat', volume: 2390, users: 3800 },
+  { name: 'Sun', volume: 3490, users: 4300 },
+];
+
+const topTokens = [
+  { name: 'Ethereum', symbol: 'ETH', volume: '$1.2B', change: '+2.4%' },
+  { name: 'Solana', symbol: 'SOL', volume: '$850M', change: '+12.1%' },
+  { name: 'Arbitrum', symbol: 'ARB', volume: '$420M', change: '-3.2%' },
+  { name: 'Optimism', symbol: 'OP', volume: '$310M', change: '+5.7%' },
+];
 
 export default function AnalyticsPage() {
-    const [isLoading, setIsLoading] = React.useState(true);
+  return (
+    <MainLayout>
+      <div className={styles.analytics}>
+        <div className={styles.header}>
+          <h1 className="outfit">Market Analytics</h1>
+          <p style={{ color: 'var(--text-muted)' }}>Real-time on-chain data and market trends.</p>
+        </div>
 
-    React.useEffect(() => {
-        const timer = setTimeout(() => setIsLoading(false), 1000);
-        return () => clearTimeout(timer);
-    }, []);
-
-    return (
-        <MainLayout>
-            <div className={styles.analyticsContainer}>
-                <div className={styles.header}>
-                    <div>
-                        <h1 className={styles.title}>Market Analytics</h1>
-                        <p className={styles.cardSubtitle}>Real-time on-chain data and market intelligence</p>
-                    </div>
-                    {!isLoading && (
-                        <div style={{ display: 'flex', gap: 12 }}>
-                            <button className="btn-secondary" style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
-                                <Filter size={16} /> Filter
-                            </button>
-                            <button className="btn-primary" style={{ padding: '8px 16px' }}>Export CSV</button>
-                        </div>
-                    )}
-                </div>
-
-                {isLoading ? (
-                    <div className={styles.grid}>
-                        <div className={styles.largeCard}><ChartSkeleton /></div>
-                        <div className={styles.sideCard}><ChartSkeleton /></div>
-                        <div className={styles.midCard}><ChartSkeleton /></div>
-                        <div className={styles.midCard}><ChartSkeleton /></div>
-                    </div>
-                ) : (
-                    <div className={styles.grid}>
-                        {/* Main Network Activity */}
-                        <div className={`card ${styles.largeCard}`}>
-                            <div className={styles.cardHeader}>
-                                <div>
-                                    <h3 className={styles.cardTitle}>Network Activity</h3>
-                                    <span className={styles.cardSubtitle}>Total Users and Transactions (24h)</span>
-                                </div>
-                                <Activity className="text-[var(--primary)]" size={20} />
-                            </div>
-                            <div className={styles.chartContainer}>
-                                <NetworkActivity />
-                            </div>
-                        </div>
-
-                        {/* Market Pulse */}
-                        <div className={`card ${styles.sideCard}`}>
-                            <div className={styles.cardHeader}>
-                                <div>
-                                    <h3 className={styles.cardTitle}>Market Pulse</h3>
-                                    <span className={styles.cardSubtitle}>Sentiment and Liquidity Radar</span>
-                                </div>
-                                <Zap className="text-yellow-500" size={20} />
-                            </div>
-                            <div className={styles.chartContainer}>
-                                <MarketPulse />
-                            </div>
-                        </div>
-
-                        {/* Flow Analysis */}
-                        <div className={`card ${styles.midCard}`}>
-                            <div className={styles.cardHeader}>
-                                <div>
-                                    <h3 className={styles.cardTitle}>Cross-Chain Flow</h3>
-                                    <span className={styles.cardSubtitle}>Volume migration between networks</span>
-                                </div>
-                                <Globe className="text-blue-500" size={20} />
-                            </div>
-                            <div className={styles.secondaryChartContainer}>
-                                <FlowAnalysis />
-                            </div>
-                        </div>
-
-                        {/* Asset Heatmap */}
-                        <div className={`card ${styles.midCard}`}>
-                            <div className={styles.cardHeader}>
-                                <div>
-                                    <h3 className={styles.cardTitle}>Asset Dominance</h3>
-                                    <span className={styles.cardSubtitle}>Market capitalization breakdown</span>
-                                </div>
-                                <BarChart3 className="text-[var(--primary)]" size={20} />
-                            </div>
-                            <div className={styles.secondaryChartContainer}>
-                                <HeatmapChart />
-                            </div>
-                        </div>
-                    </div>
-                )}
+        <div className={styles.grid}>
+          <div className={`card ${styles.largeCard}`}>
+            <h3 className="outfit">Global Trading Volume</h3>
+            <div className={styles.chartContainer}>
+              <VolumeChart data={volumeData} />
             </div>
-        </MainLayout>
-    );
+          </div>
+
+          <div className={`card`}>
+            <h3 className="outfit">Web3 dashboard Health</h3>
+            <div style={{ marginTop: 24 }} className={styles.list}>
+              <div className={styles.metricItem}>
+                <div className={styles.metricLabel}>Total Value Locked</div>
+                <div className={styles.metricValue}>$52.4B</div>
+                <div style={{ color: 'var(--success)', fontSize: 12 }}>+1.2% (24h)</div>
+              </div>
+              <div className={styles.metricItem}>
+                <div className={styles.metricLabel}>Active Wallets</div>
+                <div className={styles.metricValue}>1.2M</div>
+                <div style={{ color: 'var(--success)', fontSize: 12 }}>+8.4% (24h)</div>
+              </div>
+              <div className={styles.metricItem}>
+                <div className={styles.metricLabel}>Avg. Gas Price</div>
+                <div className={styles.metricValue}>12 Gwei</div>
+                <div style={{ color: 'var(--danger)', fontSize: 12 }}>+2.1% (24h)</div>
+              </div>
+            </div>
+          </div>
+
+          <div className={`card`}>
+            <h3 className="outfit">Top by Volume</h3>
+            <div style={{ marginTop: 24 }} className={styles.list}>
+              {topTokens.map((token) => (
+                <div key={token.symbol} className={styles.listItem}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12 }}>
+                      {token.symbol[0]}
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: 600 }}>{token.name}</div>
+                      <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{token.symbol}</div>
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontWeight: 600 }}>{token.volume}</div>
+                    <div style={{ fontSize: 12, color: token.change.startsWith('+') ? 'var(--success)' : 'var(--danger)' }}>
+                      {token.change}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className={`card ${styles.largeCard}`}>
+            <h3 className="outfit">User Growth Trend</h3>
+            <div className={styles.chartContainer}>
+              <GrowthChart data={volumeData} />
+            </div>
+          </div>
+        </div>
+      </div>
+    </MainLayout>
+  );
 }

@@ -7,15 +7,8 @@
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .header {
@@ -144,12 +137,6 @@
   justify-content: center;
 }
 
-@media (max-width: 768px) {
-  .chartContainer {
-    height: 220px;
-  }
-}
-
 .allocationList {
   display: flex;
   flex-direction: column;
@@ -190,7 +177,7 @@
   .mainContent {
     grid-template-columns: 1fr;
   }
-
+  
   .allocationCard {
     position: static;
   }
@@ -208,7 +195,7 @@
     align-items: center;
     justify-content: space-between;
   }
-
+  
   .headerActions {
     gap: 8px;
   }
@@ -228,8 +215,10 @@
   .statsGrid {
     grid-template-columns: 1fr;
   }
-
+  
   .statValue {
     font-size: 24px;
   }
 }
+
+
