@@ -35,7 +35,7 @@ const floating = {
     transition: {
       duration: 4,
       repeat: Infinity,
-      ease: "easeInOut"
+      ease: "easeInOut" as const
     }
   }
 };
@@ -50,7 +50,7 @@ const pulse = {
     transition: {
       duration: 2,
       repeat: Infinity,
-      ease: "easeInOut"
+      ease: "easeInOut" as const
     }
   }
 };
