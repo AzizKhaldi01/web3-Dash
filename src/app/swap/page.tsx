@@ -1,13 +1,30 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useCallback } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import styles from '@/styles/Swap.module.css';
-import { Settings, ArrowDown, ChevronDown, Info, RefreshCw } from 'lucide-react';
+import { Settings, ArrowDown, Info, RefreshCw } from 'lucide-react';
+import { useSwapStore } from '@/stores/swapStore';
+import { SwapInput } from '@/components/swap/SwapInput';
 
 export default function SwapPage() {
-  const [fromAmount, setFromAmount] = useState('');
-  const [toAmount, setToAmount] = useState('');
+  const {
+    fromToken,
+    toToken,
+    fromAmount,
+    toAmount,
+    exchangeRate,
+    setFromAmount,
+    switchTokens
+  } = useSwapStore();
+
+  const handleSwitch = useCallback(() => {
+    switchTokens();
+  }, [switchTokens]);
+
+  const handleAmountChange = useCallback((val: string) => {
+    setFromAmount(val);
+  }, [setFromAmount]);
 
   return (
     <MainLayout>
@@ -21,56 +38,30 @@ export default function SwapPage() {
             </div>
           </div>
 
-          <div className={styles.tokenInput}>
-            <div className={styles.inputRow}>
-              <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>You pay</span>
-              <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>Balance: 1.24 ETH</span>
-            </div>
-            <div className={styles.inputRow}>
-              <input 
-                type="text" 
-                className={styles.amountInput} 
-                placeholder="0.0" 
-                value={fromAmount}
-                onChange={(e) => setFromAmount(e.target.value)}
-              />
-              <button className={styles.tokenSelect}>
-                <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#627EEA', display: 'flex', alignItems: 'center', justifyItems: 'center', fontSize: 12 }}>E</div>
-                ETH
-                <ChevronDown size={16} />
-              </button>
-            </div>
-          </div>
+          <SwapInput
+            label="You pay"
+            amount={fromAmount}
+            token={fromToken}
+            onAmountChange={handleAmountChange}
+          />
 
-          <button className={styles.switchBtn}>
+          <button className={styles.switchBtn} onClick={handleSwitch}>
             <ArrowDown size={20} />
           </button>
 
-          <div className={styles.tokenInput}>
-            <div className={styles.inputRow}>
-              <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>You receive</span>
-              <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>Balance: 0.00</span>
-            </div>
-            <div className={styles.inputRow}>
-              <input 
-                type="text" 
-                className={styles.amountInput} 
-                placeholder="0.0" 
-                value={toAmount}
-                readOnly
-              />
-              <button className={styles.tokenSelect}>
-                <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#F7931A', display: 'flex', alignItems: 'center', justifyItems: 'center', fontSize: 12 }}>B</div>
-                WBTC
-                <ChevronDown size={16} />
-              </button>
-            </div>
-          </div>
+          <SwapInput
+            label="You receive"
+            amount={toAmount}
+            token={toToken}
+            readOnly={true}
+          />
 
           <div className={styles.details}>
             <div className={styles.detailRow}>
               <span>Exchange Rate</span>
-              <span style={{ color: 'var(--foreground)' }}>1 ETH = 0.052 WBTC</span>
+              <span style={{ color: 'var(--foreground)' }}>
+                1 {fromToken.symbol} = {exchangeRate} {toToken.symbol}
+              </span>
             </div>
             <div className={styles.detailRow}>
               <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -84,8 +75,8 @@ export default function SwapPage() {
             </div>
           </div>
 
-          <button className={`btn-primary ${styles.swapBtn}`}>
-            Swap Assets
+          <button className={`btn-primary ${styles.swapBtn}`} disabled={!fromAmount}>
+            {fromAmount ? 'Swap Assets' : 'Enter an amount'}
           </button>
         </div>
 
@@ -117,3 +108,4 @@ export default function SwapPage() {
     </MainLayout>
   );
 }
+

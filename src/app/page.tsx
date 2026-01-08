@@ -3,7 +3,6 @@
 import React from 'react';
 import Link from 'next/link';
 
-import { ArrowUpRight, ExternalLink } from 'lucide-react';
 
 import dynamic from 'next/dynamic';
 
@@ -67,7 +66,7 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white font-['Outfit']  overflow-hidden relative">
+    <div className="min-h-screen  bg-[#050505] text-white font-['Outfit']  overflow-hidden relative">
       <div className="grain-overlay" />
       <div className="absolute top-[-100px] left-[-100px] w-[300px] h-[300px] bg-[#4fffa8] blur-[150px] opacity-10 rounded-full pointer-events-none" />
       <div className="absolute bottom-[-100px] right-[-100px] w-[300px] h-[300px] bg-[#4fffa8] blur-[150px] opacity-10 rounded-full pointer-events-none" />

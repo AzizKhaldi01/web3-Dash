@@ -1,46 +1,38 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import styles from '@/styles/Dashboard.module.css';
 import {
-  MoreHorizontal,
   ChevronDown,
   Plus,
   Check,
-  ArrowUpRight,
-  ArrowDownLeft,
   RefreshCw,
-  TrendingUp,
-  TrendingDown
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import {
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
 
+import { useDashboardStore } from '@/stores/dashboardStore';
 import { AddAssetModal } from '@/components/dashboard/AddAssetModal';
+import { AssetCard } from '@/components/dashboard/AssetCard';
+import { TransactionRow } from '@/components/dashboard/TransactionRow';
+import { TimeFilter } from '@/components/dashboard/TimeFilter';
 
-const WalletChart = dynamic(() => import('@/components/dashboard/WalletChart'), { 
+const WalletChart = dynamic(() => import('@/components/dashboard/WalletChart'), {
   ssr: false,
   loading: () => <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>Loading...</div>
 });
 
-const AllocationChart = dynamic(() => import('@/components/dashboard/AllocationChart'), { 
+const AllocationChart = dynamic(() => import('@/components/dashboard/AllocationChart'), {
   ssr: false,
   loading: () => <div style={{ height: '140px', width: '140px', borderRadius: '50%', border: '2px solid var(--card-border)' }} />
 });
-
-const MiniChart = dynamic(() => import('@/components/dashboard/MiniChart'), { 
-  ssr: false,
-  loading: () => <div style={{ height: '40px', width: '80px', background: 'var(--glass)', borderRadius: 4 }} />
-});
-
 
 const chartDataMap: Record<string, any[]> = {
   '1D': [
@@ -77,54 +69,83 @@ const chartDataMap: Record<string, any[]> = {
   ]
 };
 
-const INITIAL_ASSETS = [
-  { name: 'Bitcoin', symbol: 'BTC', balance: '108.61', usdValue: '$213,017.17', rate: '1 BTC = $19,509.23', profit: '+$1,237.45', profitPct: '+5%', color: '#F7931A', sparkline: [40, 45, 42, 50, 48, 55, 60] },
-  { name: 'Ethereum', symbol: 'ETH', balance: '107.45', usdValue: '$31,569.20', rate: '1 ETH = $1,316.04', profit: '+$3,237.45', profitPct: '+8%', color: '#627EEA', sparkline: [30, 35, 32, 40, 38, 45, 50] },
-  { name: 'Tether', symbol: 'USDT', balance: '1,568.76', usdValue: '$1,552.51', rate: '1 USDT = $0.99', profit: '-$12.45', profitPct: '-1%', color: '#26A17B', sparkline: [50, 48, 52, 50, 49, 51, 50] },
-  { name: 'Ripple', symbol: 'XRP', balance: '500.00', usdValue: '$245,841.0', rate: '1 XRP = $0.45', profit: '-$37.45', profitPct: '-3%', color: '#23292F', sparkline: [20, 25, 22, 18, 20, 22, 21] },
-];
+const TIME_RANGES = ['1D', '7D', '1M', '3M', '6M', '1Y', 'ALL'];
 
-const transactions = [
-  { id: '0000000000000000000000459f73...', asset: 'Bitcoin', type: 'Deposit', date: '2022-09-11 20:53', amount: '+1.05401 BTC', color: '#F7931A' },
-  { id: '96afab209aab982cf4bef872ad...', asset: 'Bitcoin', type: 'Deposit', date: '2022-09-09 15:21', amount: '+0.02642 BTC', color: '#F7931A' },
-  { id: '654652485KL', asset: 'Debit Card', type: 'Deposit', date: '2022-09-08 16:45', amount: '+$980.97', color: '#FF5252' },
-  { id: '0x3a72e9b4e4bf6702db7...', asset: 'Ethereum', type: 'Deposit', date: '2022-09-06 09:44', amount: '+0.0144 ETH', color: '#627EEA' },
-];
+
+
+setTimeout(() => {
+
+}, 2000);
+
 
 export default function DashboardPage() {
-  const [assets, setAssets] = useState(INITIAL_ASSETS);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [timeRange, setTimeRange] = useState('1D');
-  const [historyRange, setHistoryRange] = useState('1Y');
-  const [activeCard, setActiveCard] = useState(0);
-  const [payAmount, setPayAmount] = useState('1');
-  const [isTransferring, setIsTransferring] = useState(false);
-  const [transferSuccess, setTransferSuccess] = useState(false);
+  const {
+    assets,
+    transactions,
+    timeRange,
+    historyRange,
+    activeCard,
+    payAmount,
+    isTransferring,
+    transferSuccess,
+    selectedAsset,
+    isAddModalOpen,
+    addAsset,
+    setTimeRange,
+    setHistoryRange,
+    setActiveCard,
+    setPayAmount,
+    setSelectedAsset,
+    setIsAddModalOpen,
+    handleTransfer,
+  } = useDashboardStore();
 
-  const [selectedAsset, setSelectedAsset] = useState<string | null>(null);
+  // Memoize chart data based on selected time range
+  const currentChartData = useMemo(() =>
+    chartDataMap[timeRange] || chartDataMap['1D'],
+    [timeRange]
+  );
 
-  const currentChartData = useMemo(() => {
-    return chartDataMap[timeRange] || chartDataMap['1D'];
-  }, [timeRange]);
-
+  // Memoize receive amount calculation
   const receiveAmount = useMemo(() => {
     const amount = parseFloat(payAmount) || 0;
-    return (amount * 1316.04).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return (amount * 1316.04).toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
   }, [payAmount]);
 
-  const handleTransfer = () => {
-    setIsTransferring(true);
-    setTimeout(() => {
-      setIsTransferring(false);
-      setTransferSuccess(true);
-      setTimeout(() => setTransferSuccess(false), 3000);
-    }, 1500);
-  };
+  // Memoize allocation chart data
+  const allocationData = useMemo(() => ({
+    labels: ['BTC', 'ETH', 'USDT', 'Other'],
+    values: [40, 30, 20, 10],
+    colors: ['#F7931A', '#627EEA', '#26A17B', '#707a8a']
+  }), []);
 
-  const handleAddAsset = (newAsset: any) => {
-    setAssets(prev => [newAsset, ...prev]);
-  };
+  // Memoized callbacks
+  const handleAssetSelect = useCallback((symbol: string) => {
+    setSelectedAsset(symbol === selectedAsset ? null : symbol);
+  }, [selectedAsset, setSelectedAsset]);
 
+  const handlePayAmountChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setPayAmount(e.target.value);
+  }, [setPayAmount]);
+
+  const handleClearAmount = useCallback(() => {
+    setPayAmount('0');
+  }, [setPayAmount]);
+
+  const handleAddAsset = useCallback((newAsset: any) => {
+    addAsset(newAsset);
+  }, [addAsset]);
+
+  const handleCloseModal = useCallback(() => {
+    setIsAddModalOpen(false);
+  }, [setIsAddModalOpen]);
+
+  const handleOpenModal = useCallback(() => {
+    setIsAddModalOpen(true);
+  }, [setIsAddModalOpen]);
 
   return (
     <MainLayout>
@@ -144,14 +165,10 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div className={styles.balanceAmount}>$1,180,577.24</div>
-              
+
               <div style={{ display: 'flex', alignItems: 'center', gap: 20, margin: '12px 0' }}>
                 <div style={{ width: 140, height: 140 }}>
-                  <AllocationChart data={{
-                    labels: ['BTC', 'ETH', 'USDT', 'Other'],
-                    values: [40, 30, 20, 10],
-                    colors: ['#F7931A', '#627EEA', '#26A17B', '#707a8a']
-                  }} />
+                  <AllocationChart data={allocationData} />
                 </div>
                 <div className={styles.balanceLegend} style={{ flex: 1, gridTemplateColumns: '1fr', gap: 8 }}>
                   <div className={styles.legendItem}><div className={styles.dot} style={{ background: '#F7931A' }} /> BTC (40%)</div>
@@ -171,57 +188,19 @@ export default function DashboardPage() {
 
             </div>
 
-            <button className={`card ${styles.addCard}`} onClick={() => setIsAddModalOpen(true)}>
+            <button className={`card ${styles.addCard}`} onClick={handleOpenModal}>
               <Plus size={20} />
               <span style={{ fontSize: 11, marginTop: 4, fontWeight: 600 }}>ADD</span>
             </button>
 
             {assets.map((asset) => (
-              <div 
-                key={asset.symbol} 
-                className={`card ${styles.assetCard} ${selectedAsset === asset.symbol ? styles.assetCardActive : ''}`} 
-                onClick={() => setSelectedAsset(asset.symbol === selectedAsset ? null : asset.symbol)}
-              >
-                <div className={styles.assetHeader}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div className={styles.assetIcon} style={{ background: asset.color }}>
-                      {asset.symbol[0]}
-                    </div>
-                    <div>
-                      <div style={{ fontWeight: 700, fontSize: 14 }}>{asset.name}</div>
-                      <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{asset.rate}</div>
-                    </div>
-                  </div>
-                  <MoreHorizontal size={16} color="var(--text-muted)" />
-                </div>
-
-                <div className={styles.assetMain}>
-                  <div>
-                    <div className={styles.assetValue}>{asset.balance} {asset.symbol}</div>
-                    <div className={styles.assetSubValue}>{asset.usdValue}</div>
-                  </div>
-                  <div className={styles.miniChartContainer}>
-                    <MiniChart color={asset.color} data={asset.sparkline} />
-                  </div>
-                </div>
-
-                <div className={styles.assetProfit}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: asset.profit.startsWith('+') ? 'var(--success)' : 'var(--danger)' }}>
-                    {asset.profit.startsWith('+') ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-                    <span style={{ fontWeight: 600 }}>{asset.profitPct}</span>
-                  </div>
-                  <div style={{ color: 'var(--text-muted)', fontSize: 11 }}>
-                    {asset.profit}
-                  </div>
-                </div>
-
-                <div className={styles.assetActions}>
-                  <button className={styles.actionBtn}>Swap</button>
-                  <button className={styles.actionBtn}>Send</button>
-                </div>
-              </div>
+              <AssetCard
+                key={asset.symbol}
+                asset={asset}
+                isSelected={selectedAsset === asset.symbol}
+                onSelect={handleAssetSelect}
+              />
             ))}
-
 
           </div>
           <div className={styles.contentRow}>
@@ -231,17 +210,11 @@ export default function DashboardPage() {
               <div className={`card ${styles.chartCard}`}>
                 <div className={styles.chartHeader}>
                   <h3 className="outfit" style={{ fontSize: 16 }}>My Wallets</h3>
-                  <div className={styles.timeFilters}>
-                    {['1D', '7D', '1M', '3M', '6M', '1Y', 'ALL'].map((t) => (
-                      <button 
-                        key={t} 
-                        className={`${styles.timeBtn} ${t === timeRange ? styles.timeBtnActive : ''}`}
-                        onClick={() => setTimeRange(t)}
-                      >
-                        {t}
-                      </button>
-                    ))}
-                  </div>
+                  <TimeFilter
+                    options={TIME_RANGES}
+                    selected={timeRange}
+                    onSelect={setTimeRange}
+                  />
                 </div>
                 <div style={{ height: '300px', position: 'relative' }}>
                   <div style={{ position: 'absolute', top: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 10, background: 'rgba(22, 26, 30, 0.8)', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--card-border)', fontSize: 12, backdropFilter: 'blur(4px)' }}>
@@ -256,17 +229,11 @@ export default function DashboardPage() {
               <div className={`card ${styles.historyCard}`}>
                 <div className={styles.chartHeader}>
                   <h3 className="outfit" style={{ fontSize: 16 }}>Transaction history</h3>
-                  <div className={styles.timeFilters}>
-                    {['1D', '7D', '1M', '3M', '6M', '1Y', 'ALL'].map((t) => (
-                      <button 
-                        key={t} 
-                        className={`${styles.timeBtn} ${t === historyRange ? styles.timeBtnActive : ''}`}
-                        onClick={() => setHistoryRange(t)}
-                      >
-                        {t}
-                      </button>
-                    ))}
-                  </div>
+                  <TimeFilter
+                    options={TIME_RANGES}
+                    selected={historyRange}
+                    onSelect={setHistoryRange}
+                  />
                 </div>
                 <div className={styles.tableWrapper}>
                   <Table>
@@ -281,25 +248,7 @@ export default function DashboardPage() {
                     </TableHeader>
                     <TableBody>
                       {transactions.map((tx, i) => (
-                        <TableRow key={i} className="border-b border-[var(--card-border)] hover:bg-[var(--glass)] transition-colors">
-                          <TableCell className="py-4">
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                              <div style={{ width: 8, height: 8, borderRadius: '50%', background: tx.color }} />
-                              <span style={{ fontWeight: 500 }}>{tx.asset}</span>
-                            </div>
-                          </TableCell>
-                          <TableCell className={`py-4 text-[var(--text-muted)] underline cursor-pointer ${styles.hideMobile}`}>{tx.id}</TableCell>
-                          <TableCell className="py-4">
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                              {tx.type === 'Deposit' ? <ArrowDownLeft size={14} className="text-[var(--success)]" /> : <ArrowUpRight size={14} className="text-[var(--danger)]" />}
-                              <span style={{ fontSize: 13 }}>{tx.type}</span>
-                            </div>
-                          </TableCell>
-                          <TableCell className={`py-4 text-[var(--text-muted)] ${styles.hideMobile}`}>{tx.date}</TableCell>
-                          <TableCell className={`py-4 text-right font-semibold ${tx.amount.startsWith('+') ? 'text-[var(--success)]' : 'text-[var(--foreground)]'}`}>
-                            {tx.amount}
-                          </TableCell>
-                        </TableRow>
+                        <TransactionRow key={i} transaction={tx} />
                       ))}
                     </TableBody>
                   </Table>
@@ -316,9 +265,9 @@ export default function DashboardPage() {
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                  <div 
-                    className={styles.virtualCard} 
-                    style={{ 
+                  <div
+                    className={styles.virtualCard}
+                    style={{
                       border: activeCard === 0 ? '1px solid var(--primary)' : '1px solid transparent',
                       opacity: activeCard === 0 ? 1 : 0.5,
                       cursor: 'pointer',
@@ -351,9 +300,9 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
-                  <div 
-                    className={styles.virtualCard} 
-                    style={{ 
+                  <div
+                    className={styles.virtualCard}
+                    style={{
                       border: activeCard === 1 ? '1px solid var(--primary)' : '1px solid transparent',
                       opacity: activeCard === 1 ? 1 : 0.5,
                       cursor: 'pointer',
@@ -403,10 +352,10 @@ export default function DashboardPage() {
                     <span className={styles.inputLabel}>Balance: 107.45 ETH</span>
                   </div>
                   <div className={styles.inputWrapper}>
-                    <input 
-                      type="number" 
-                      value={payAmount} 
-                      onChange={(e) => setPayAmount(e.target.value)}
+                    <input
+                      type="number"
+                      value={payAmount}
+                      onChange={handlePayAmountChange}
                     />
                     <div className={styles.tokenSelector}>
                       <div style={{ width: 14, height: 14, borderRadius: '50%', background: '#627EEA' }} />
@@ -432,8 +381,8 @@ export default function DashboardPage() {
                 </div>
 
                 <div className={styles.transferActions}>
-                  <button 
-                    className={styles.sendBtn} 
+                  <button
+                    className={styles.sendBtn}
                     onClick={handleTransfer}
                     disabled={isTransferring}
                   >
@@ -445,7 +394,7 @@ export default function DashboardPage() {
                       'Send Now'
                     )}
                   </button>
-                  <button className={styles.clearBtn} onClick={() => setPayAmount('0')}>Clear</button>
+                  <button className={styles.clearBtn} onClick={handleClearAmount}>Clear</button>
                 </div>
               </div>
             </div>
@@ -453,9 +402,9 @@ export default function DashboardPage() {
         </div>
 
       </div>
-      <AddAssetModal 
-        isOpen={isAddModalOpen} 
-        onClose={() => setIsAddModalOpen(false)} 
+      <AddAssetModal
+        isOpen={isAddModalOpen}
+        onClose={handleCloseModal}
         onAdd={handleAddAsset}
       />
     </MainLayout>
